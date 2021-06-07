@@ -4,13 +4,46 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/tilinna/clock"
+	"github.com/joa/clock"
 )
 
 var testTime = time.Date(2018, 1, 1, 10, 0, 0, 0, time.UTC)
+
+func TestMock_NewTicker(t *testing.T) {
+	m := clock.NewMock(testTime)
+	ticker := m.NewTicker(1 * time.Second)
+	done := make(chan bool)
+	var n int32
+
+	go func() {
+		total := 0
+		for range ticker.C {
+			total++
+			atomic.AddInt32(&n, 1)
+			if total == 10 {
+				break
+			}
+		}
+		done <- true
+	}()
+
+	m.Add(10 * time.Second)
+
+	select {
+	case <-done:
+	case <-time.After(1 * time.Second):
+		t.Errorf("didn't get 10 ticks in 1s")
+		return
+	}
+
+	if m := atomic.LoadInt32(&n); m != 10 {
+		t.Errorf("want ticks: %d, got: %d", 10, m)
+	}
+}
 
 func TestMock_AddNext(t *testing.T) {
 	m := clock.NewMock(testTime)

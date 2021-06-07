@@ -7,6 +7,7 @@ import (
 
 type mockTimer struct {
 	deadline  time.Time
+	interval  time.Duration
 	fire      func() time.Duration
 	mock      *Mock
 	heapIndex int
@@ -14,9 +15,10 @@ type mockTimer struct {
 
 const removed = -1
 
-func newMockTimer(m *Mock, d time.Time) *mockTimer {
+func newMockTimer(m *Mock, d time.Time, dd time.Duration) *mockTimer {
 	return &mockTimer{
 		deadline:  d,
+		interval:  dd,
 		mock:      m,
 		heapIndex: removed,
 	}

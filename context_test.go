@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tilinna/clock"
+	"github.com/joa/clock"
 )
 
 func Test_Context(t *testing.T) {

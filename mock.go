@@ -87,8 +87,7 @@ func (m *Mock) set(now time.Time) (time.Time, time.Duration) {
 			m.stop(t)
 		} else {
 			// Ticker's next deadline is set to the first tick after the new now.
-			dd := (now.Sub(m.now)/d + 1) * d
-			t.deadline = m.now.Add(dd)
+			t.deadline = t.deadline.Add(t.interval)
 			m.reset(t)
 		}
 	}
