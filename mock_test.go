@@ -36,7 +36,7 @@ func TestMock_NewTicker(t *testing.T) {
 	select {
 	case <-done:
 	case <-time.After(1 * time.Second):
-		t.Errorf("didn't get 10 ticks in 1s")
+		t.Errorf("test expired; didn't get 10 ticks in 1s")
 		return
 	}
 
@@ -89,7 +89,6 @@ func TestMock_AddNext(t *testing.T) {
 	next(15 * time.Second)
 	test(tm.C, 25*time.Second)
 	next(0)
-
 	tm.Reset(0) // fires immediately
 	test(tm.C, 25*time.Second)
 	next(0)
@@ -127,29 +126,32 @@ func TestMock_AddNext(t *testing.T) {
 func ExampleMock_AddNext() {
 	start := time.Now()
 	mock := clock.NewMock(start)
-	mock.Tick(1 * time.Second)
+	def := mock.Tick(1 * time.Second)
 	fizz := mock.Tick(3 * time.Second)
 	buzz := mock.Tick(5 * time.Second)
 	var items []string
 	for i := 0; i < 20; i++ {
 		mock.AddNext()
+
 		var item string
-		select {
-		case <-fizz:
-			select {
-			case <-buzz:
+
+		if (i+1)%3 == 0 {
+			<-fizz
+			item = "Fizz"
+
+			if (i+1)%5 == 0 {
+				<-buzz
 				item = "FizzBuzz"
-			default:
-				item = "Fizz"
 			}
-		default:
-			select {
-			case <-buzz:
-				item = "Buzz"
-			default:
-				item = strconv.Itoa(int(mock.Since(start) / time.Second))
-			}
+		} else if (i+1)%5 == 0 {
+			<-buzz
+			item = "Buzz"
+		} else {
+			item = strconv.Itoa(int(mock.Since(start) / time.Second))
 		}
+
+		<-def
+
 		items = append(items, item)
 	}
 	fmt.Println(strings.Join(items, " "))

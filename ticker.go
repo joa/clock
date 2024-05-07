@@ -41,7 +41,8 @@ func (m *Mock) newTicker(d time.Duration) *Ticker {
 		mockTimer: newMockTimer(m, m.now.Add(d), d),
 	}
 	t.fire = func() time.Duration {
-		c <- m.now
+		now := m.now
+		go func() { c <- now }()
 		return d
 	}
 	m.start(t.mockTimer)
@@ -57,4 +58,15 @@ func (t *Ticker) Stop() {
 	t.mock.Lock()
 	defer t.mock.Unlock()
 	t.mock.stop(t.mockTimer)
+}
+
+// Reset stops a ticker and resets its period to the specified duration.
+func (t *Ticker) Reset(d time.Duration) {
+	if t.ticker != nil {
+		t.ticker.Reset(d)
+		return
+	}
+	t.mock.Lock()
+	defer t.mock.Unlock()
+	t.mock.reset(t.mockTimer)
 }

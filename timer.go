@@ -1,6 +1,8 @@
 package clock
 
-import "time"
+import (
+	"time"
+)
 
 // Timer represents a time.Timer.
 type Timer struct {
@@ -54,13 +56,11 @@ func (m *Mock) newTimerFunc(deadline time.Time, afterFunc func()) *Timer {
 			return 0
 		}
 	} else {
-		c := make(chan time.Time, 1)
+		c := make(chan time.Time)
 		t.C = c
 		t.fire = func() time.Duration {
-			select {
-			case c <- m.now:
-			default:
-			}
+			now := m.now
+			go func() { c <- now }()
 			return 0
 		}
 	}

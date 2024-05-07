@@ -82,6 +82,7 @@ func (m *Mock) set(now time.Time) (time.Time, time.Duration) {
 			return m.now, m.now.Sub(cur)
 		}
 		m.now = t.deadline
+		
 		if d := t.fire(); d == 0 {
 			// Timers are always stopped.
 			m.stop(t)
